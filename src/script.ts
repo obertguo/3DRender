@@ -55,11 +55,12 @@ objUpload.addEventListener('change', async () =>{
     const xy_rotate_deg = parseInt(xy_slider.value);
     const xz_rotate_deg = parseInt(xz_slider.value);
     const yz_rotate_deg = parseInt(yz_slider.value);
-    const scale = parseFloat(scale_slider.value);
+    const scalefactor = parseFloat(scale_slider.value);
 
     obj.rotateXY(xy_rotate_deg);
     obj.rotateXZ(xz_rotate_deg);
     obj.rotateYZ(yz_rotate_deg);
+    obj.scale(scalefactor);
 
     xy_slider.value = xy_rotate_deg.toString();
     xz_slider.value = xz_rotate_deg.toString();
@@ -68,7 +69,7 @@ objUpload.addEventListener('change', async () =>{
     xy_out.innerHTML = `XY Rotation: ${xy_rotate_deg} degrees.`;
     xz_out.innerHTML = `XZ Rotation: ${xz_rotate_deg} degrees.`;
     yz_out.innerHTML = `YZ Rotation: ${yz_rotate_deg} degrees.`;
-    scale_out.innerHTML = `Scale: ${scale}`;
+    scale_out.innerHTML = `Scale: ${scalefactor}`;
 
     screen.render(obj.make_pixelbuffer(height, width));
 });
