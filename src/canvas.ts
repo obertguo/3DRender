@@ -1,21 +1,3 @@
-import { Triangle } from './interfaces';
-
-const drawTriangle = (ctx: CanvasRenderingContext2D, scale: number, t: Triangle) => {
-    ctx.beginPath();
-
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 0.1;
-    ctx.fillStyle = 'rgba(0,0,255,0.05)';
-    ctx.moveTo(0,0);
-
-    ctx.lineTo(scale * t.v1.x, scale * t.v1.y);
-    ctx.lineTo(scale * t.v2.x, scale * t.v2.y);
-    ctx.lineTo(scale * t.v3.x, scale * t.v3.y);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
-}
-
 const clear = (ctx: CanvasRenderingContext2D) =>{
     ctx.save();
     ctx.resetTransform();
@@ -23,14 +5,33 @@ const clear = (ctx: CanvasRenderingContext2D) =>{
     ctx.restore();
 }
 
-export const render = (ctx: CanvasRenderingContext2D, scale: number, tris: Triangle[]) =>{
-    clear(ctx);
-    tris.forEach(t => {
-        drawTriangle(ctx, scale, t);
-    });
-}
 const delay = (ms: number) => {
     return new Promise<void>((resolve, reject) => {
         setTimeout(() => resolve(), ms);
     });
+}
+
+
+export default class Canvas{
+    ctx: CanvasRenderingContext2D;
+
+    constructor(height: number, width: number, ctx: CanvasRenderingContext2D){
+        ctx.canvas.height = height;
+        ctx.canvas.width = width;
+        this.ctx = ctx;
+    }
+
+    private drawpixel = (x: number, y: number, rgb: number[]) => {
+        this.ctx.fillStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+        this.ctx.fillRect(x,y,1,1);
+        this.ctx.fill();
+    }
+    
+    public render(pixelbuffer: number[][][]): void{
+        for(let row = 0; row < this.ctx.canvas.height; ++row){
+            for(let col = 0; col < this.ctx.canvas.width; ++col){
+                this.drawpixel(col, row, pixelbuffer[row][col]);
+            }
+        }
+    }
 }

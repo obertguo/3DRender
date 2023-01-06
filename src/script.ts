@@ -1,5 +1,6 @@
-import { render } from './canvas';
-import { Obj } from './object';
+import Canvas from './canvas'
+import Obj from './object'
+import { runTests } from './tests'
 
 const objUpload = document.getElementById('objUpload')! as HTMLInputElement;
 
@@ -18,27 +19,38 @@ const xz_out = document.getElementById('xz-out')!;
 const yz_slider = document.getElementById('yz-slider')! as HTMLInputElement;
 const yz_out = document.getElementById('yz-out')!;
 
-let obj: Obj;
+const height = 500;
+const width = 1000;
 
+let obj: Obj;
+let screen = new Canvas(height, width, ctx);
+
+// runTests();
 objUpload.addEventListener('change', async () =>{
     if(!objUpload.files) return;
-    obj = new Obj();
+
     const objFile = objUpload.files[0];
     const objData = await objFile.text();
+
     const verticesData = objData.split('\n').filter(line => line.startsWith('v '));
     const vertices = verticesData.map(line => {
-        const nums = line.split(' ').slice(1);
+        const nums = line.split(/\s+/).slice(1);
         return nums.map(val => parseFloat(val));
     });
 
     const facesData = objData.split('\n').filter(line => line.startsWith('f '));
     const faces = facesData.map(line =>{
-        const nums = line.split(' ').slice(1);
+        const nums = line.split(/\s+/).slice(1);
         return nums.map(val => parseInt(val) - 1);
     });
 
-    obj.addVerticies(vertices);
-    obj.addFaces(faces);
+    const color = [Math.random()*256, Math.random()*256, Math.random()*256];
+    const facecolors = faces.map(() => {
+        const intensity = Math.random();
+        return color.map(val => val*intensity);
+    });
+
+    obj = new Obj(vertices, faces, facecolors);
 
     const xy_rotate_deg = parseInt(xy_slider.value);
     const xz_rotate_deg = parseInt(xz_slider.value);
@@ -58,13 +70,14 @@ objUpload.addEventListener('change', async () =>{
     yz_out.innerHTML = `YZ Rotation: ${yz_rotate_deg} degrees.`;
     scale_out.innerHTML = `Scale: ${scale}`;
 
-    render(ctx, scale, obj.getFaces());
+    screen.render(obj.make_pixelbuffer(height, width));
 });
 
 scale_slider.oninput = () =>{
-    const scale = parseFloat(scale_slider.value);
-    scale_out.innerHTML = `Scale: ${scale}`;
-    render(ctx, scale, obj.getFaces());
+    const factor = parseFloat(scale_slider.value);
+    scale_out.innerHTML = `Scale: ${factor}`;
+    obj.scale(factor);
+    screen.render(obj.make_pixelbuffer(height, width));
 }
 
 xy_slider.oninput = () =>{
@@ -72,7 +85,7 @@ xy_slider.oninput = () =>{
     const scale = parseFloat(scale_slider.value);
     obj.rotateXY(xy_rotate_deg);
     xy_out.innerHTML = `XY Rotation: ${xy_rotate_deg} degrees.`;
-    render(ctx, scale, obj.getFaces());
+    screen.render(obj.make_pixelbuffer(height, width));
 }
 
 xz_slider.oninput = () =>{
@@ -80,7 +93,7 @@ xz_slider.oninput = () =>{
     const scale = parseFloat(scale_slider.value);
     obj.rotateXZ(xz_rotate_deg);
     xz_out.innerHTML = `XZ Rotation: ${xz_rotate_deg} degrees.`;
-    render(ctx, scale, obj.getFaces());
+    screen.render(obj.make_pixelbuffer(height, width));
 }
 
 yz_slider.oninput = () =>{
@@ -88,9 +101,5 @@ yz_slider.oninput = () =>{
     const scale = parseFloat(scale_slider.value);
     obj.rotateYZ(yz_rotate_deg);
     yz_out.innerHTML = `YZ Rotation: ${yz_rotate_deg} degrees.`;
-    render(ctx, scale, obj.getFaces());
- }
-
-canvas.width = 0.9 * window.innerWidth;
-canvas.height = 0.8 * window.innerHeight;
-ctx.translate(canvas.width/2, canvas.height/2);
+    screen.render(obj.make_pixelbuffer(height, width));
+}
