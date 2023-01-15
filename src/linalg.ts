@@ -97,6 +97,24 @@ const degtorad = (deg: number) =>{
     return deg*(Math.PI / 180);
 }
 
+// Produces a random int between min and max both inclusive
+const randInt = (min: number, max: number) =>{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+// Produces a random float between min inclusive, and max exclusive
+const randFloat = (min: number, max: number) =>{
+    return Math.random()*(max-min+1)+min;
+}
+
+// Produces the unit vector of vec
+const vecnormalize = (vec: number[]) =>{
+    const magnitude = Math.sqrt(vec.reduce((prev, curr) => {
+        return prev + Math.pow(curr, 2);
+    }, 0));
+    return vec.map(entry => entry/magnitude);
+}
+
 export default {
     vecdot,
     veccross,
@@ -108,5 +126,8 @@ export default {
     vecsubtract,
     makevec,
     makemat,
-    degtorad
+    degtorad,
+    randInt,
+    randFloat,
+    vecnormalize
 };

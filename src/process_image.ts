@@ -53,11 +53,25 @@ const pixel_face_collision = (x: number, y: number, face: number[], vertices: nu
         0 <= w2+w2 && w1+w2 <= 1;
 }
 
-const make_pixelbuffer = (height: number, width: number, faces: number[][], vertices: number[][], facecolors: number[][]): number[][][] =>{
-    let pixel_buffer = linalg.makemat(height, width, [255,255,255]);
-    let zbuffer = linalg.makemat(height, width, Number.MIN_SAFE_INTEGER);
+const computeLightIntensity = (face: number[], vertices: number[][], lightPos: number[]): number =>{
+    const v1 = vertices[face[0]];
+    const v2 = vertices[face[1]];
+    const v3 = vertices[face[2]];
 
-    faces.forEach((face, i) =>{
+    const dir1 = linalg.vecsubtract(v2,v1);
+    const dir2 = linalg.vecsubtract(v3,v1);
+    const normal = linalg.vecnormalize(linalg.veccross(dir1,dir2));
+    const faceToLightSrc = linalg.vecnormalize(linalg.vecsubtract(lightPos, v1));
+
+    return Math.abs(linalg.vecdot(normal, faceToLightSrc));
+}
+
+const make_pixelbuffer = (height: number, width: number, faces: number[][], vertices: number[][], objcolor: number[]): number[][][] =>{
+    let pixelbuffer = linalg.makemat(height, width, [0,0,0,255]);
+    let zbuffer = linalg.makemat(height, width, Number.MIN_SAFE_INTEGER);
+    const lightPos = [0, 0, Number.MAX_SAFE_INTEGER];
+
+    faces.forEach(face =>{
         const face_bounds = get_face_bounding_box(face, vertices);
         for(let row = Math.max(0, face_bounds[2]); row <= Math.min(height-1, face_bounds[3]); ++row){
             for(let col = Math.max(0, face_bounds[0]); col <= Math.min(width-1, face_bounds[1]); ++col){
@@ -65,13 +79,15 @@ const make_pixelbuffer = (height: number, width: number, faces: number[][], vert
                     const depth = get_pixel_depth(col,row,face,vertices);
                     if(depth >= zbuffer[row][col]){
                         zbuffer[row][col] = depth;
-                        pixel_buffer[row][col] = facecolors[i];
+                        //Diffuse shading
+                        const intensity = computeLightIntensity(face, vertices, lightPos);
+                        pixelbuffer[row][col] = objcolor.map(x => x*intensity);
                     }
                 }
             }
         }
     });
-    return pixel_buffer;
+    return pixelbuffer;
 }
 
 export default{

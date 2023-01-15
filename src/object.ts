@@ -2,22 +2,34 @@ import transformations from './transformations'
 import process_image from './process_image';
 
 export default class Obj{
-    vertices: number[][];
-    faces: number[][];
-    facecolors: number[][];
-    xy_rotateDeg: number;
-    xz_rotateDeg: number;
-    yz_rotateDeg: number;
-    scalefactor: number;
+    private vertices: number[][];
+    private faces: number[][];
+    private objcolor: number[];
+    private xy_rotateDeg: number;
+    private xz_rotateDeg: number;
+    private yz_rotateDeg: number;
+    private scalefactor: number;
 
-    constructor(vertices: number[][], faces: number[][], facecolors: number[][]){
+    constructor(vertices: number[][], faces: number[][], objcolor: number[]){
         this.vertices = vertices;
         this.faces = faces;
-        this.facecolors = facecolors;
+        this.objcolor = objcolor;
         this.xy_rotateDeg = 0;
         this.xz_rotateDeg = 0;
         this.yz_rotateDeg = 0;
         this.scalefactor = 1;
+    }
+
+    public getFaces(): number[][]{
+        return this.faces;
+    }
+
+    public getVertices(): number[][]{
+        return this.vertices;
+    }
+
+    public getColor(): number[]{
+        return this.objcolor;
     }
 
     public rotateXY(deg: number): void{
@@ -53,9 +65,9 @@ export default class Obj{
     }
 
     public make_pixelbuffer(height: number, width: number): number[][][]{
-        console.log(this.faces);
+        // Shift the vertex locations so that they can be seen on canvas
         const renderedVertices = transformations.translateY(height/2, 
             transformations.translateX(width/2, this.vertices));
-        return process_image.make_pixelbuffer(height, width, this.faces, renderedVertices, this.facecolors);
+        return process_image.make_pixelbuffer(height, width, this.faces, renderedVertices, this.objcolor);
     }
 }
